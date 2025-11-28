@@ -171,6 +171,11 @@ if [ "$1" == "run" ]; then
     # Fix postgres data privileges
     chown -R postgres: /var/lib/postgresql/ /data/database/postgres/
 
+    # Fix renderer data privileges
+    if ! [ -d /data/tiles/default/ ]; then
+        chown -R renderer: /data/tiles/
+    fi
+
     # Configure Apache CORS
     if [ "${ALLOW_CORS:-}" == "enabled" ] || [ "${ALLOW_CORS:-}" == "1" ]; then
         echo "export APACHE_ARGUMENTS='-D ALLOW_CORS'" >> /etc/apache2/envvars
