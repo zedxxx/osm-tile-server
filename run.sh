@@ -145,7 +145,7 @@ if [ "$1" == "import" ]; then
     # Load functions for OSM Carto v5.9.0
     sudo -u postgres psql -d gis -f /data/style/functions.sql
 
-    #Import external data
+    # Import external data
     chown -R renderer: /home/renderer/src/ /data/style/ /data/cache/
     if [ -f /data/style/scripts/get-external-data.py ] && [ -f /data/style/external-data.yml ]; then
         sudo -E -u renderer python3 /data/style/scripts/get-external-data.py -c /data/style/external-data.yml -D /data/cache ${EXTERNAL_DATA_EXTRA_ARGS:-}
@@ -236,5 +236,5 @@ if [ "$1" == "run" ]; then
     exit 0
 fi
 
-echo "invalid command"
+echo "Invalid command"
 exit 1
