@@ -12,6 +12,14 @@ function setPostgresPassword() {
     sudo -u postgres psql -c "ALTER USER renderer PASSWORD '${PGPASSWORD:-renderer}'"
 }
 
+function startPostgres() {
+    sudo -u postgres /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl start -w -t ${PG_CTL_TIMEOUT:-3600} -D /data/database/postgres/
+}
+
+function stopPostgres() {
+    sudo -u postgres /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl stop -w -t ${PG_CTL_TIMEOUT:-3600} -m fast -D /data/database/postgres/
+}
+
 if [ "$#" -ne 1 ]; then
     echo "usage: <import|run>"
     echo "commands:"
@@ -51,7 +59,8 @@ if [ "$1" == "import" ]; then
 
     # Initialize PostgreSQL
     createPostgresConfig
-    service postgresql start
+    startPostgres
+
     INITIALIZE="$( sudo -u postgres psql -XtAc "SELECT 1 FROM pg_database WHERE datname='gis'" )"
     if [ $INITIALIZE = '1' ]
     then
@@ -136,10 +145,10 @@ if [ "$1" == "import" ]; then
         sudo -E -u renderer python3 /data/style/scripts/get-external-data.py -c /data/style/external-data.yml -D /data/cache ${EXTERNAL_DATA_EXTRA_ARGS:-}
     fi
 
+    stopPostgres
+    
     # Register that data has changed for mod_tile caching purposes
     sudo -u renderer touch /data/database/planet-import-complete
-
-    service postgresql stop
 
     exit 0
 fi
@@ -181,11 +190,13 @@ if [ "$1" == "run" ]; then
         echo "export APACHE_ARGUMENTS='-D ALLOW_CORS'" >> /etc/apache2/envvars
     fi
 
-    # Initialize PostgreSQL and Apache
+    # Initialize PostgreSQL
     createPostgresConfig
-    service postgresql start
-    service apache2 restart
+    startPostgres
     setPostgresPassword
+
+    # Initialize Apache
+    service apache2 restart
 
     # Load functions for OSM Carto v5.9.0
     sudo -u postgres psql -d gis -f /data/style/functions.sql
