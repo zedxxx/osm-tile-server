@@ -95,8 +95,7 @@ RUN apt-get update \
 RUN adduser --disabled-password --gecos "" renderer
 
 # Add Noto Emoji fonts: https://fonts.google.com/noto/specimen/Noto+Emoji
-COPY missing-fonts/NotoEmoji/*.ttf /usr/share/fonts/
-RUN chmod 0644 /usr/share/fonts/NotoEmoji-*.ttf
+COPY --chmod=a+r missing-fonts/NotoEmoji/*.ttf /usr/share/fonts/
 
 # For some reason this one is missing in the default packages
 RUN wget https://github.com/stamen/terrain-classic/blob/master/fonts/unifont-Medium.ttf?raw=true --content-disposition -P /usr/share/fonts/
@@ -116,12 +115,12 @@ RUN npm install -g carto@1.2.0
 RUN echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" >> /etc/apache2/conf-available/mod_tile.conf \
 && echo "LoadModule headers_module /usr/lib/apache2/modules/mod_headers.so" >> /etc/apache2/conf-available/mod_headers.conf \
 && a2enconf mod_tile && a2enconf mod_headers
-COPY apache.conf /etc/apache2/sites-available/000-default.conf
+COPY --chmod=a+r apache.conf /etc/apache2/sites-available/000-default.conf
 RUN ln -sf /dev/stdout /var/log/apache2/access.log \
 && ln -sf /dev/stderr /var/log/apache2/error.log
 
 # leaflet
-COPY leaflet-demo.html /var/www/html/index.html
+COPY --chmod=a+r leaflet-demo.html /var/www/html/index.html
 WORKDIR /var/www/html/
 RUN wget https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip \
 && unzip leaflet.zip \
@@ -133,15 +132,14 @@ RUN wget https://github.com/Leaflet/Leaflet/releases/download/v1.9.4/leaflet.zip
 RUN wget -O /var/www/html/favicon.ico https://www.openstreetmap.org/favicon.ico
 
 # Copy update scripts
-COPY openstreetmap-tiles-update-expire.sh /usr/bin/
-RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
-&& mkdir /var/log/tiles \
+COPY --chmod=a+rx openstreetmap-tiles-update-expire.sh /usr/bin/
+RUN mkdir /var/log/tiles \
 && chmod a+rw /var/log/tiles \
 && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
 && echo "* * * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
 
 # Configure PosgtreSQL
-COPY postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/
+COPY --chmod=a+r postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/
 RUN chown -R postgres:postgres /var/lib/postgresql \
 && chown postgres:postgres /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.tmpl \
 && echo "host all all 0.0.0.0/0 scram-sha-256" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf \
@@ -163,15 +161,14 @@ RUN mkdir -p /run/renderd/ \
   &&  ln -s /data/style /home/renderer/src/openstreetmap-carto \
   &&  ln -s /data/tiles /var/cache/renderd/tiles
 
-COPY renderd.conf /etc/renderd.conf
+COPY --chmod=a+r renderd.conf /etc/renderd.conf
 
 # Install helper script
 COPY --from=compiler-helper-script /home/renderer/src/regional /home/renderer/src/regional
 COPY --from=compiler-stylesheet /root/openstreetmap-carto /home/renderer/src/openstreetmap-carto-backup
 
 # Start running
-COPY run.sh /
-RUN chmod +x /run.sh
+COPY --chmod=a+rx run.sh /
 ENTRYPOINT ["/run.sh"]
 CMD []
 EXPOSE 80 5432
