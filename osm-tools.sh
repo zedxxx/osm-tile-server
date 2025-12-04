@@ -15,6 +15,7 @@ Commands:
   import [region]   Import OSM data (optionally download region first)
   get <region>      Download region data (examples: europe/belarus, russia/kaliningrad, russia)
   logs              Show OSM Tile Server logs (follow mode)
+  render [bbox,z,Z] Run tile rendering for the given wgs84 bbox and min, max zooms (count from 1)
   pg <subcommand>   Manage PostgreSQL in the OSM Tile Server container:
                       run          Create and run container with PostgreSQL server
                       analyze      Run ANALYZE
@@ -86,6 +87,22 @@ if [ "$1" == "logs" ]; then
     exec docker compose logs --follow
 fi
 
+function run_render_list_geo() {
+    local x y X Y z Z
+    IFS=',' read -r x y X Y z Z <<< "$1"
+    z=$((z-1))
+    Z=$((Z-1))
+    local render_geo=render-list-geo.pl
+    docker cp "./${render_geo}" "osm:/${render_geo}"
+    time docker exec -it osm "${render_geo}" -x "$x" -y "$y" -X "$X" -Y "$Y" -z "$z" -Z "$Z"
+}
+
+if [ "$1" == "render" ]; then
+    cd "${WORK_DIR}"
+    run_render_list_geo "$2"
+    exit 0
+fi
+
 # PostgreSQL
 
 PG_DB=gis
@@ -102,7 +119,7 @@ function pg_run_psql() {
 }
 
 function pg_run_convert() {
-    docker cp ./convert-names.sql "${PG_CONTAINER_NAME}":/convert.sql
+    docker cp ./convert-names.sql "${PG_CONTAINER_NAME}:/convert.sql"
     time docker exec -it "${PG_CONTAINER_NAME}" psql -h localhost -U "${PG_USER}" -d "${PG_DB}" -f /convert.sql
 }
 
