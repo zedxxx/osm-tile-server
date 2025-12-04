@@ -19,7 +19,7 @@ services:
       - THREADS=8
       - UPDATES=disabled
       - AUTOVACUUM=off
-      - PG_CTL_TIMEOUT=3600
+      - PG_CTL_TIMEOUT=3600 # seconds
       - "OSM2PGSQL_EXTRA_ARGS=--cache 4096" # MB, https://osm2pgsql.org/doc/manual.html#command-line-options
       - "EXTERNAL_DATA_EXTRA_ARGS=--cache --no-update"
       
