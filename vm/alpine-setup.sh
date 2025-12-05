@@ -49,9 +49,10 @@ rc-update add docker
 docker info
 
 # Disable autostart not-necessary services
-rc-update del ntpd || true
-rc-update del vsftpd || true
-rc-update del loadkmap boot || true
+#rc-update del ntpd || true
+#rc-update del sshd || true
+#rc-update del vsftpd || true
+#rc-update del loadkmap boot || true
 
 # Setup tools script
 chmod a+x "${osm_dir}/tools/render-list-geo.pl"

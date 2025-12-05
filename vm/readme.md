@@ -10,7 +10,6 @@
 4. Edit VM settings:
    1. Add second HDD: 1000 GB (data)
    2. (Optional) Add third HDD: 16 GB (swap)
-   3. VMWare Tools: Enable option "Synchronize guest time with host"
 
 *When you create virtual disks always select "Store virtual disk as a single file".*
 
@@ -23,13 +22,13 @@
     1. Keymap: us us
     2. Root Password: alpine
     3. Apk Mirror: c (enable community repository)
-    4. User - Allow root ssh login: yes (enable ssh, sftp login by password for root)
+    4. User - Allow root ssh login: yes (enable ssh and sftp login by password for root)
     5. Disk & Install: sda sys
 5. (Optional) If you don't have enough RAM you can use third HDD for [swap](https://wiki.alpinelinux.org/wiki/Swap)
 
 ## Format and Mount second HDD
 
-1. Connect to the VM via SSH using [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html). You can find the VM's IP address in the boot log on the VM screen.
+1. Connect to the VM via SSH using [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/). You can find the machine's IP address with command `ifconfig eth0`
 2. Run `fdisk -l` to get the disk name (usually it should be `/dev/sdb`)
 3. Create new primary partition on drive sdb:
    1. `fdisk /dev/sdb`
