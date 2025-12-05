@@ -3,7 +3,7 @@
 set -euox pipefail
 
 # Base tools
-apk add bash mc nano htop
+apk add bash make mc nano htop
 
 # VMware tools https://wiki.alpinelinux.org/wiki/Open-vm-tools
 apk add open-vm-tools open-vm-tools-guestinfo open-vm-tools-deploypkg
@@ -34,7 +34,7 @@ apk add docker docker-compose
 
 mkdir --parents /etc/docker
 
-cat > /etc/docker/daemon.json << EOF 
+cat > /etc/docker/daemon.json << EOF
 {
     "data-root": "/mnt/data/docker"
 }
@@ -47,10 +47,11 @@ docker info
 
 # Disable autostart not-necessary services
 rc-update del ntpd || true
-rc-update del sshd || true
 rc-update del vsftpd || true
+rc-update del loadkmap boot || true
 
 # Setup tools script
+chmod a+x /osm/tools/render-list-geo.pl
 chmod a+x /osm/tools/osm-tools.sh
 ln -sfTv /osm/tools/osm-tools.sh /usr/local/bin/osm
 
