@@ -23,8 +23,29 @@
         <div id="map"></div>
 
         <script>
-            var map = L.map('map').setView([0, 0], 3);
+            // Function to handle URL hash
+            function handleHash() {
+                var hash = window.location.hash;
+                if (hash) {
+                    var parts = hash.substring(1).split('/');
+                    if (parts.length === 3) {
+                        var zoom = parseInt(parts[0]);
+                        var lat = parseFloat(parts[1]);
+                        var lng = parseFloat(parts[2]);
+                        if (!isNaN(zoom) && !isNaN(lat) && !isNaN(lng)) {
+                            return {zoom: zoom, center: [lat, lng]};
+                        }
+                    }
+                }
+                return null;
+            }
 
+            // Get initial view from hash if available
+            var initialView = handleHash();
+            var initialCenter = initialView ? initialView.center : [0, 0];
+            var initialZoom = initialView ? initialView.zoom : 3;
+
+            var map = L.map('map').setView(initialCenter, initialZoom);
             var map_attribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>';
 
             var customLayer = L.tileLayer('/tile/{z}/{x}/{y}.png', {
@@ -48,6 +69,26 @@
 
             L.control.layers(baseLayers, {}, {collapsed: false}).addTo(map);
 
+            // Update URL when map moves
+            map.on('moveend zoomend', function() {
+                var center = map.getCenter();
+                var url = window.location.protocol + '//' + window.location.host + window.location.pathname;
+                var hash = '#' + map.getZoom() + '/' + center.lat.toFixed(4) + '/' + center.lng.toFixed(4);
+                window.history.replaceState({}, '', url + hash);
+            });
+
+            // Update View when coordinates changed
+            window.addEventListener('hashchange', function() {
+                var hashResult = handleHash();
+                if (hashResult) {
+                    map.setView(hashResult.center, hashResult.zoom);
+                }
+            });
+
+            // Initial update after map initialization
+            setTimeout(function() {
+                map.fire('moveend');
+            }, 100);
         </script>
     </body>
 </html>
