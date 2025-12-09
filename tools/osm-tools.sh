@@ -12,11 +12,18 @@ Usage: $0 <command> [options]
 
 Commands:
   up                Create and run container with OSM Tile Server
+  
   down              Stop and delete OSM Tile Server container
+  
   import [region]   Import OSM data (optionally download region first)
+  
   get <region>      Download region data (examples: europe/belarus, russia/kaliningrad, russia)
+  
   logs              Show OSM Tile Server logs (follow mode)
-  render [bbox,z,Z] Run tile rendering for the given wgs84 bbox and min, max zooms (count from 1)
+  
+  render [lon,lat,LON,LAT,z,Z] [n] Run tile rendering for the given WGS84 bbox (lon,lat,LON,LAT), 
+                    min and max zooms (z,Z) and threads count (n). Zoom numbering starts from 1.
+
   pg <subcommand>   Manage PostgreSQL in the OSM Tile Server container:
                       run          Create and run container with PostgreSQL server
                       stop         Stop running container with PostgreSQL server
